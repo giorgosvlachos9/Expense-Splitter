@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/giorgosvlachos9/Expense-Splitter#readme",
   "dependencies": {
+    "@react-native-picker/picker": "2.11.4",
     "expo": "^58.0.22",
     "react": "19.3.0",
     "react-native": "^0.88.1"

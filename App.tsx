@@ -1,20 +1,35 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Button, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Button, Keyboard, TouchableWithoutFeedback, Platform } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import { CURRENCIES, getCurrency, toEUR, fromEUR } from './currencies';
 
 export default function App() {
   const [total, setTotal] = useState('');
   const [people, setPeople] = useState('');
+  const [currencyCode, setCurrencyCode] = useState('EUR');
   const [result, setResult] = useState<string | null>(null);
 
+  const currency = getCurrency(currencyCode);
+
   const calculate = () => {
-    const totalNum = parseFloat(total);
-    const peopleNum = parseInt(people);
-    if (!isNaN(totalNum) && !isNaN(peopleNum) && peopleNum > 0) {
-      const perPerson = (totalNum / peopleNum).toFixed(2);
-      setResult(`Each person pays: $${perPerson}`);
-    } else {
-      setResult('Please enter valid numbers');
+    const totalNum = parseFloat(total.replace(',', '.'));
+    const peopleNum = parseInt(people, 10);
+
+    if (isNaN(totalNum) || isNaN(peopleNum) || peopleNum <= 0) {
+        setResult('Please enter valid numbers');
+        Keyboard.dismiss();
+        return;
     }
+    
+    // convert to EUR -> split -> convert back to chosen currency
+    const totalEUR = toEUR(totalNum, currency);
+    const perPersonEUR = totalEUR / peopleNum;
+    const perPerson = fromEUR(perPersonEUR, currency);
+
+    const formatted = perPerson.toFixed(currency.decimals);
+    setResult(`Each person pays: ${currency.symbol}${formatted} ${currency.code}`);
+
+    
     Keyboard.dismiss();
   };
 
@@ -23,10 +38,29 @@ export default function App() {
       <View style={styles.container}>
         <Text style={styles.title}>Expense Splitter</Text>
         
+        <Text style={styles.label}>Currency</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={currencyCode}
+            onValueChange={(value) => setCurrencyCode(value)}
+            mode="dropdown"
+            style={styles.picker}
+            itemStyle={Platform.OS === 'ios' ? { height: 150 } : undefined}
+          >
+            {CURRENCIES.map(c => (
+              <Picker.Item
+                key={c.code}
+                label={`${c.symbol} ${c.name} (${c.code})`}
+                value={c.code}
+              />
+            ))}
+          </Picker>
+        </View>
+        
         <TextInput
           style={styles.input}
-          placeholder="Total Amount ($)"
-          keyboardType="numeric"
+          placeholder={`Total Amount (${currency.code})`}
+          keyboardType="decimal-pad"
           value={total}
           onChangeText={setTotal}
         />
@@ -62,6 +96,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 30,
     color: '#333',
+  },
+  label: {
+    fontSize: 16,
+    color: '#555',
+    marginBottom: 4,
+  },
+  pickerWrapper: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    marginBottom: 15,
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 50,
+    width: '100%',
   },
   input: {
     height: 50,
