@@ -1,0 +1,33 @@
+{
+  "name": "expense-splitter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/giorgosvlachos9/Expense-Splitter.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/giorgosvlachos9/Expense-Splitter/issues"
+  },
+  "homepage": "https://github.com/giorgosvlachos9/Expense-Splitter#readme",
+  "dependencies": {
+    "expo": "^58.0.22",
+    "react": "19.3.0",
+    "react-native": "^0.88.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "typescript": "~6.0.3"
+  }
+}
