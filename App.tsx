@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Button, Keyboard, TouchableWithoutFeedback, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, Text, View, TextInput, Button, Keyboard, TouchableWithoutFeedback, Platform, Animated } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { CURRENCIES, getCurrency, toEUR, fromEUR } from './currencies';
 
@@ -10,6 +10,20 @@ export default function App() {
   const [result, setResult] = useState<string | null>(null);
 
   const currency = getCurrency(currencyCode);
+
+  // Animation value: 0 = hidden, 1 = fully visible
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  // When the result changes, animate it in
+  useEffect(() => {
+    if (result) {
+      fadeAnim.setValue(0);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [result, fadeAnim]);
 
   const calculate = () => {
     const totalNum = parseFloat(total.replace(',', '.'));
@@ -29,7 +43,6 @@ export default function App() {
     const formatted = perPerson.toFixed(currency.decimals);
     setResult(`Each person pays: ${currency.symbol}${formatted} ${currency.code}`);
 
-    
     Keyboard.dismiss();
   };
 
@@ -77,7 +90,26 @@ export default function App() {
           <Button title="Calculate" onPress={calculate} />
         </View>
 
-        {result && <Text style={styles.result}>{result}</Text>}
+        {result && (
+          <Animated.Text
+            style={[
+              styles.result,
+              {
+                opacity: fadeAnim,
+                transform: [
+                  {
+                    translateY: fadeAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [12, 0], // slides up 12px as it fades in
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            {result}
+          </Animated.Text>
+        )}
       </View>
     </TouchableWithoutFeedback>
   );
